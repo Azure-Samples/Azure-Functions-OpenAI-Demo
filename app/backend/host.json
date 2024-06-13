@@ -1,0 +1,29 @@
+{
+    "version": "2.0",
+    "logging": {
+        "applicationInsights": {
+            "samplingSettings": {
+                "isEnabled": true,
+                "excludedTypes": "Request"
+            },
+            "enableLiveMetricsFilters": true
+        },
+        "logLevel": {
+          "default": "Trace"
+        }
+    },
+    "extensions": {
+        "openai": {
+          "searchProvider": {
+            "type": "azureAiSearch",
+            "isSemanticSearchEnabled": true,
+            "useSemanticCaptions": true,
+            "vectorSearchDimensions": 1536
+          },
+          "storageConnectionName": "OpenAiStorageConnection"
+        },
+        "serviceBus": {
+          "maxConcurrentCalls": 1
+      }
+      }
+}
