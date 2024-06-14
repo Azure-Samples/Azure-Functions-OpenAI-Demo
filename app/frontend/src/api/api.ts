@@ -76,11 +76,18 @@ export async function getUserId(): Promise<string> {
   const chatHistoryResponse = await fetch('/api/chat/' + globalThis.assistantId + '?timestampUTC=2023-01-01T00:00:00Z', {
     method: "GET",});
 
-  const chatHistory = await chatHistoryResponse.json();
-
-  // If no chat history, create a new chat
-  if (chatHistory.answer == "No response returned.") {
-    newChat(globalThis.assistantId);
+  // Create a new chat if the chat table does not exist - results in an error
+  if (chatHistoryResponse.status > 299 || !chatHistoryResponse.ok) {
+    newChat(globalThis.assistantId
+    );
+  }
+  else
+  {
+    // If no chat history, create a new chat
+    const chatHistory = await chatHistoryResponse.json();
+    if (chatHistory.answer == "No response returned.") {
+      newChat(globalThis.assistantId);
+    }
   }
   return clientPrincipal.userId
 }
