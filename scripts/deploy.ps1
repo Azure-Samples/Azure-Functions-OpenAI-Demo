@@ -26,6 +26,7 @@ Write-Host $env:AZURE_SUBSCRIPTION_ID
 cd ./app/frontend
 $SWA_DEPLOYMENT_TOKEN = az staticwebapp secrets list --name $env:AZURE_STATICWEBSITE_NAME --query "properties.apiKey" --output tsv
 if ($SWA_DEPLOYMENT_TOKEN -ne "") {
+  npm install
   swa build
   swa deploy --env production --deployment-token $SWA_DEPLOYMENT_TOKEN
 } else {
