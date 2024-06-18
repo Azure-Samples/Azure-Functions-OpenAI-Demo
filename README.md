@@ -1,3 +1,23 @@
+---
+page_type: sample
+languages:
+- C#
+- .NET
+- bicep
+- TypeScript
+- Node.js
+- JavaScript
+products:
+- azure
+- azure-openai
+- azure-functions
+- static-web-apps
+- entra-id
+urlFragment: Azure-Functions-OpenAI-Demo
+name: "Azure Functions OpenAI triggers and bindings sample"
+description: An end to end demo that demonstrates how to use the Azure Functions OpenAI triggers and bindings.
+---
+
 # Chat + Enterprise data with Azure OpenAI and Azure Functions
 
 This demo is based on [azure-search-openai-demo](https://github.com/Azure-Samples/azure-search-openai-demo) and uses a static web app for the frontend and Azure functions for the backend API's.
