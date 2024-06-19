@@ -1,11 +1,10 @@
 ---
 page_type: sample
 languages:
-- C#
-- .NET
+- csharp
 - bicep
 - TypeScript
-- Node.js
+- nodejs
 - JavaScript
 products:
 - azure
