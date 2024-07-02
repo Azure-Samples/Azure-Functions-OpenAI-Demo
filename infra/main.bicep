@@ -19,9 +19,9 @@ param azFunctionHostingPlanType string = 'flexconsumption'
 param staticWebsiteName string = ''
  
 param searchServiceName string = ''
- 
-param searchServiceSkuName string = 'standard'
-param searchIndexName string = 'gptkbindex'
+@allowed([ 'free', 'basic', 'standard', 'standard2', 'standard3', 'storage_optimized_l1', 'storage_optimized_l2' ])
+param searchServiceSkuName string
+param searchServiceIndexName string
  
 param storageAccountName string = ''
 
@@ -30,11 +30,33 @@ param serviceBusNamespaceName string = ''
 
 param openAiServiceName string = ''
  
-param openAiSkuName string = 'S0'
-param gptDeploymentName string = 'text-embedding-3-small'
-param gptModelName string = 'text-embedding-3-small'
-param chatGptDeploymentName string = 'chat'
-param chatGptModelName string = 'gpt-35-turbo'
+param openAiSkuName string
+@allowed([ 'azure', 'openai', 'azure_custom' ])
+param openAiHost string // Set in main.parameters.json
+
+param chatGptModelName string = ''
+param chatGptDeploymentName string = ''
+param chatGptDeploymentVersion string = ''
+param chatGptDeploymentCapacity int = 0
+var chatGpt = {
+  modelName: !empty(chatGptModelName) ? chatGptModelName : startsWith(openAiHost, 'azure') ? 'gpt-35-turbo' : 'gpt-3.5-turbo'
+  deploymentName: !empty(chatGptDeploymentName) ? chatGptDeploymentName : 'chat'
+  deploymentVersion: !empty(chatGptDeploymentVersion) ? chatGptDeploymentVersion : '0613'
+  deploymentCapacity: chatGptDeploymentCapacity != 0 ? chatGptDeploymentCapacity : 40
+}
+
+param embeddingModelName string = ''
+param embeddingDeploymentName string = ''
+param embeddingDeploymentVersion string = ''
+param embeddingDeploymentCapacity int = 0
+param embeddingDimensions int = 0
+var embedding = {
+  modelName: !empty(embeddingModelName) ? embeddingModelName : 'text-embedding-3-small'
+  deploymentName: !empty(embeddingDeploymentName) ? embeddingDeploymentName : 'embedding'
+  deploymentVersion: !empty(embeddingDeploymentVersion) ? embeddingDeploymentVersion : '1'
+  deploymentCapacity: embeddingDeploymentCapacity != 0 ? embeddingDeploymentCapacity : 300
+  dimensions: embeddingDimensions != 0 ? embeddingDimensions : 1536
+}
  
 // @description('Id of the user or app to assign application roles')
 // param principalId string = ''
@@ -81,24 +103,24 @@ module openAi 'core/ai/cognitiveservices.bicep' = {
     }
     deployments: [
       {
-        name: gptDeploymentName
-        capacity: 300
+        name: embedding.deploymentName
+        capacity: embeddingDeploymentCapacity
         model: {
           format: 'OpenAI'
-          name: gptModelName
-          version: '1'
+          name: embedding.modelName
+          version: embeddingDeploymentVersion
         }
         scaleSettings: {
           scaleType: 'Standard'
         }
       }
       {
-        name: chatGptDeploymentName
-        capacity: 40
+        name: chatGpt.deploymentName
+        capacity: chatGpt.deploymentCapacity
         model: {
           format: 'OpenAI'
-          name: chatGptModelName
-          version: '0613'
+          name: chatGpt.modelName
+          version: chatGptDeploymentVersion
         }
         scaleSettings: {
           scaleType: 'Standard'
@@ -172,7 +194,7 @@ module function 'core/host/azfunctions.bicep' = if (azFunctionHostingPlanType ==
     location: location
     appServicePlanId: appServicePlan.outputs.id
     azureOpenaiChatgptDeployment: chatGptDeploymentName
-    azureOpenaigptDeployment: gptDeploymentName
+    azureOpenaigptDeployment: embeddingDeploymentName
     azureOpenaiService: openAi.outputs.name
     azureSearchService: searchService.outputs.name
     appInsightsConnectionString : appInsights.outputs.connectionString
@@ -195,9 +217,10 @@ module functionflexconsumption 'app/processor.bicep' = if (azFunctionHostingPlan
     storageAccountName: storage.outputs.name
     appInsightsConnectionString : appInsights.outputs.connectionString
     azureOpenaiChatgptDeployment: chatGptDeploymentName
-    azureOpenaigptDeployment: gptDeploymentName
+    azureOpenaiEmbeddingDeployment: embeddingDeploymentName
     azureOpenaiService: openAi.outputs.name
     azureSearchService: searchService.outputs.name
+    azureSearchIndex: searchServiceIndexName
     serviceBusQueueName: serviceBus.outputs.serviceBusQueueName
     serviceBusNamespaceFQDN: serviceBus.outputs.serviceBusNamespaceFQDN
      appSettings: {
@@ -308,11 +331,11 @@ output AZURE_TENANT_ID string = tenant().tenantId
 output AZURE_RESOURCE_GROUP string = resourceGroup.name
  
 output AZURE_OPENAI_SERVICE string = openAi.outputs.name
-output AZURE_OPENAI_GPT_DEPLOYMENT string = gptDeploymentName
+output AZURE_OPENAI_EMB_DEPLOYMENT string = embeddingDeploymentName
 output AZURE_OPENAI_CHATGPT_DEPLOYMENT string = chatGptDeploymentName
 output AZURE_OPENAI_LOCATION string = openAi.outputs.location
  
-output AZURE_SEARCH_INDEX string = searchIndexName
+output AZURE_SEARCH_INDEX string = searchServiceIndexName
 output AZURE_SEARCH_SERVICE string = searchService.outputs.name
  
 output AZURE_STORAGE_ACCOUNT string = storage.outputs.name

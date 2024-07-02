@@ -20,11 +20,11 @@ namespace sample.demo
         public IActionResult AskData(
             [HttpTrigger(AuthorizationLevel.Anonymous, Route = "ask")] HttpRequestData req,
             [SemanticSearchInput(
-                "AISearchEndpoint",
-                "openai-index",
+                "AZURE_SEARCH_ENDPOINT",
+                "%AZURE_SEARCH_INDEX%",
                 Query = "{question}",
-                ChatModel = "%CHAT_MODEL_DEPLOYMENT_NAME%",
-                EmbeddingsModel = "%EMBEDDING_MODEL_DEPLOYMENT_NAME%",
+                ChatModel = "%AZURE_OPENAI_CHATGPT_DEPLOYMENT%",
+                EmbeddingsModel = "%AZURE_OPENAI_EMB_DEPLOYMENT%",
                 SystemPrompt = "%SYSTEM_PROMPT%"
             )]
                 SemanticSearchContext result
