@@ -95,25 +95,42 @@ azd up
 
 - Simply run `azd up`
 
-### Running locally
+### Running locally (currently untested/unsupported)
 
 Your frontend and backend apps can run on the local machine using storage emulators + remote AI resources. 
 
 1. Initialize the Azure resources using one of the approaches above.
 2. Create a new `app/backend/local.settings.json` file to store Azure resource configuration using values in the .azure/[environment name]
 ```json
-
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AZURE_OPENAI_ENDPOINT": "<Endpoint of existing OpenAI service>",
+    "CHAT_MODEL_DEPLOYMENT_NAME": "chat",
+    "EMBEDDING_MODEL_DEPLOYMENT_NAME": "text-embedding-3-small",
+    "SYSTEM_PROMPT": "You are a helpful assistant. You are responding to requests from a user about internal emails and documents. You can and should refer to the internal documents to help respond to requests. If a user makes a request thats not covered by the documents provided in the query, you must say that you do not have access to the information and not try and get information from other places besides the documents provided. The following is a list of documents that you can refer to when answering questions. The documents are in the format [filename]: [text] and are separated by newlines. If you answer a question by referencing any of the documents, please cite the document in your answer. For example, if you answer a question by referencing info.txt, you should add \"Reference: info.txt\" to the end of your answer on a separate line.",
+    "AISearchEndpoint": "<Endpoint of existing Azure AI Search service>",
+    "fileShare": "/mounts/openaifiles",
+    "ServiceBusConnection__fullyQualifiedNamespace": "<Namespace of existing service bus namespace>",
+    "ServiceBusQueueName": "<Name of service bus Queue>",
+    "OpenAiStorageConnection__accountName": "<Account name of storage account used by OpenAI extension>",
+    "AzureWebJobsStorage__accountName": "<Account name of storage account used by Function runtime>",
+    "DEPLOYMENT_STORAGE_CONNECTION_STRING": "<Account name of storage account used by Function deployment>",
+    "APPLICATIONINSIGHTS_CONNECTION_STRING": "<Connection for App Insights resource>"
+  }
+}
 ```
-3. Start Azurite using VS Code extension or run this command in a new terminal window using optional [Docker](www.docker.com)
+3. Disable VNET private endpoints in resource group so your function can connect to remote resources (or VPN into VNET)
+4. Start Azurite using VS Code extension or run this command in a new terminal window using optional [Docker](www.docker.com)
 ```bash
 docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 \
     mcr.microsoft.com/azure-storage/azurite
 ```
-4. Start the Function app by pressing `F5` in Visual Studio (Code) or run this command:
+5. Start the Function app by pressing `F5` in Visual Studio (Code) or run this command:
 ```bash
 func start
 ```
-5. navigate to http://127.0.0.1:5000
+6. navigate to http://127.0.0.1:5000
 
 ### Using the frontend web app:
 
