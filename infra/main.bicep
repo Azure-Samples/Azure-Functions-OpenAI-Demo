@@ -230,6 +230,7 @@ module staticwebsite 'core/host/staticwebsite.bicep' = {
   }
 }
 
+// Learn more about Azure role-based access control (RBAC) and built-in-roles at https://docs.microsoft.com/en-us/azure/role-based-access-control/overview
 var CognitiveServicesRoleDefinitionIds = ['5e0bd9bd-7b93-4f28-af87-19fc36ad61bd'] // Cognitive Services OpenAI User
 module openAiRoleUser 'app/openai-access.bicep' = {
   scope: resourceGroup
