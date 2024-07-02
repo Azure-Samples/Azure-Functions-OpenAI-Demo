@@ -66,12 +66,22 @@ This application requires resources like Azure OpenAI and Azure AI Search which 
 
 Execute the following command in a new terminal, if you don't have any pre-existing Azure services and want to start from a fresh deployment.
 
-1. Provision required Azure resources (e.g. Azure OpenAI and Azure Search) into a new environment
+1. Ensure your deployment scripts are executable (scripts are currently needed to help AZD deploy your app)
+
+Mac/Linux:
+```bash
+chmod +x ./scripts/deploy.sh
+```
+Windows:
+```Powershell
+set-executionpolicy remotesigned
+```
+2. Provision required Azure resources (e.g. Azure OpenAI and Azure Search) into a new environment
 ```bash
 azd up
 ```
 > NOTE: For the target location, the regions that currently support the models used in this sample are **East US** or **South Central US**. For an up-to-date list of regions and models, check [here](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/concepts/models).  Make sure that all the intended services for this deployment have availability in your targeted regions.  Note also, it may take a minute for the application to be fully deployed.
-2. Navigate to the Azure Static WebApp deployed in step 1. The URL is printed out when azd completes (as "Endpoint"), or you can find it in the Azure portal.
+3. Navigate to the Azure Static WebApp deployed in step 2. The URL is printed out when azd completes (as "Endpoint"), or you can find it in the Azure portal.
 
 #### Use existing resources
 
