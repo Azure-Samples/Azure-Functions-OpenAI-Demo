@@ -230,39 +230,33 @@ module staticwebsite 'core/host/staticwebsite.bicep' = {
   }
 }
 
+var CognitiveServicesRoleDefinitionIds = ['5e0bd9bd-7b93-4f28-af87-19fc36ad61bd'] // Cognitive Services OpenAI User
 module openAiRoleUser 'app/openai-access.bicep' = {
   scope: resourceGroup
   name: 'openai-roles'
   params: {
     principalId: processorAppPrincipalId
     openAiAccountResourceName: openAi.outputs.name
-    roleDefinitionIds: ['5e0bd9bd-7b93-4f28-af87-19fc36ad61bd']
+    roleDefinitionIds: CognitiveServicesRoleDefinitionIds
   }
 }
  
+var StorageRoleDefinitionIds = ['b7e6dc6d-f1e8-4753-8033-0f276bb0955b' // Storage Blob Data Owner
+                                '974c5e8b-45b9-4653-ba55-5f855dd0fb88' // Storage Queue Data Contributor
+                                '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3' // Storage Table Data Contributor
+                                '0c867c2a-1d8c-454a-a3db-ab2ea1bdc8bb'] // Storage File Data SMB Share Contributor
 module storageRoleUser 'app/storage-access.bicep' = {
   scope: resourceGroup
   name: 'storage-roles'
   params: {
     principalId: processorAppPrincipalId
-    //This list can likely be reduced to just the roles needed
-    roleDefinitionIds: ['b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
-                        '2a2b9908-6ea1-4ae2-8e65-a410df84e7d1'
-                        'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
-                        '974c5e8b-45b9-4653-ba55-5f855dd0fb88'
-                        '8a0f0c08-91a1-4084-bc3d-661d67233fed'
-                        'c6a89b2d-59bc-44d0-9896-0f6e12d7b80a'
-                        '19e7f393-937e-4f77-808e-94535e297925'
-                        '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
-                        '76199698-9eea-4c19-bc75-cec21354c6b6'
-                        '0c867c2a-1d8c-454a-a3db-ab2ea1bdc8bb'
-                        'aba4ae5f-2193-4029-9191-0cb91df5e314']
+    roleDefinitionIds: StorageRoleDefinitionIds
     storageAccountName: storage.outputs.name
   }
 }
 
-var ServiceBusRoleDefinitionIds  = ['090c5cfd-751d-490a-894a-3ce6f1109419', '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0'] //Azure Service Bus Data Owner and Data Receiver roles
-// Allow access from processor to Service Bus using a managed identity and Azure Service Bus Data Owner and Data Receiver roles
+var ServiceBusRoleDefinitionIds  = ['090c5cfd-751d-490a-894a-3ce6f1109419'] // Azure Service Bus Data Owner
+// Allow access from processor to Service Bus using a managed identity and Azure Service Bus Data Owner
 module ServiceBusDataOwnerRoleAssignment 'app/servicebus-Access.bicep' = {
   name: 'ServiceBusDataOwnerRoleAssignment'
   scope: resourceGroup
@@ -273,12 +267,15 @@ module ServiceBusDataOwnerRoleAssignment 'app/servicebus-Access.bicep' = {
   }
 }
 
+var SearchRoleDefinitionIds = ['8ebe5a00-799e-43f5-93ac-243d3dce84a7'  // Azure Search Index Data Contributor
+                                // '7ca78c08-252a-4471-8644-bb5ff32d4ba0'  // Azure Search Service Contributor
+                              ]
 module searchRoleUser 'app/search-access.bicep' = {
   scope: resourceGroup
   name: 'search-roles'
   params: {
     principalId: processorAppPrincipalId
-    roleDefinitionIds: ['7ca78c08-252a-4471-8644-bb5ff32d4ba0', '8ebe5a00-799e-43f5-93ac-243d3dce84a7', '1407120a-92aa-4202-b7e9-c0e197c71c8f']
+    roleDefinitionIds: SearchRoleDefinitionIds
     searchAccountName: searchService.outputs.name
   }
 }
