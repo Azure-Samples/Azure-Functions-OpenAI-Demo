@@ -153,9 +153,9 @@ To remove your data from Azure Static Web Apps, go to <https://identity.azuresta
 
 ## How to delete all Azure resources
 
-The following command deletes and purges all resources:
+The following command deletes and purges all resources (this cannot be undone!):
 ```bash
-azd down
+azd down --purge
 ```
 
 ## Upload files failures
