@@ -93,7 +93,7 @@ azd up
 
 #### Deploying or re-deploying a local clone of the repo
 
-- Simply run `azd up`
+- Simply run `azd up` again
 
 ### Running locally (currently untested/unsupported)
 

@@ -268,7 +268,7 @@ module ServiceBusDataOwnerRoleAssignment 'app/servicebus-Access.bicep' = {
 }
 
 var SearchRoleDefinitionIds = ['8ebe5a00-799e-43f5-93ac-243d3dce84a7'  // Azure Search Index Data Contributor
-                                // '7ca78c08-252a-4471-8644-bb5ff32d4ba0'  // Azure Search Service Contributor
+                               '7ca78c08-252a-4471-8644-bb5ff32d4ba0'  // Azure Search Service Contributor (required if index is not yet created)
                               ]
 module searchRoleUser 'app/search-access.bicep' = {
   scope: resourceGroup
