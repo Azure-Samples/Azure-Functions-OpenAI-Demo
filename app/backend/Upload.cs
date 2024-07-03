@@ -78,7 +78,7 @@ namespace sample.demo
                 "{FileName}",
                 InputType.FilePath,
                 "AZURE_SEARCH_ENDPOINT",
-                "%AZURE_SEARCH_INDEX%",
+                "openai-index",
                 Model = "%AZURE_OPENAI_EMB_DEPLOYMENT%"
             )]
             public required SearchableDocument SearchableDocument { get; init; }

@@ -115,18 +115,19 @@ Your frontend and backend apps can run on the local machine using storage emulat
 {
   "IsEncrypted": false,
   "Values": {
-    "AZURE_OPENAI_ENDPOINT": "<Endpoint of existing OpenAI service>",
+    "AZURE_OPENAI_ENDPOINT": "<Endpoint of existing OpenAI service, e.g. https://xx.openai.azure.com/>",
     "AZURE_OPENAI_CHATGPT_DEPLOYMENT": "chat",
     "AZURE_OPENAI_EMB_DEPLOYMENT": "embedding",
-    "SYSTEM_PROMPT": "You are a helpful assistant. You are responding to requests from a user about internal emails and documents. You can and should refer to the internal documents to help respond to requests. If a user makes a request thats not covered by the documents provided in the query, you must say that you do not have access to the information and not try and get information from other places besides the documents provided. The following is a list of documents that you can refer to when answering questions. The documents are in the format [filename]: [text] and are separated by newlines. If you answer a question by referencing any of the documents, please cite the document in your answer. For example, if you answer a question by referencing info.txt, you should add \"Reference: info.txt\" to the end of your answer on a separate line.",
-    "AZURE_SEARCH_ENDPOINT": "<Endpoint of existing Azure AI Search service>",
+    "AZURE_SEARCH_ENDPOINT": "<Endpoint of existing Azure AI Search service, e.g. https://xx.search.windows.net>",
+    "AZURE_SEARCH_INDEX": "openai-index",
     "fileShare": "/mounts/openaifiles",
     "ServiceBusConnection__fullyQualifiedNamespace": "<Namespace of existing service bus namespace>",
     "ServiceBusQueueName": "<Name of service bus Queue>",
-    "OpenAiStorageConnection__accountName": "<Account name of storage account used by OpenAI extension>",
+    "OpenAiStorageConnection": "<Connection string of storage account used by OpenAI extension (managed identity coming soon!)>",
     "AzureWebJobsStorage__accountName": "<Account name of storage account used by Function runtime>",
     "DEPLOYMENT_STORAGE_CONNECTION_STRING": "<Account name of storage account used by Function deployment>",
-    "APPLICATIONINSIGHTS_CONNECTION_STRING": "<Connection for App Insights resource>"
+    "APPLICATIONINSIGHTS_CONNECTION_STRING": "<Connection for App Insights resource>",
+    "SYSTEM_PROMPT": "You are a helpful assistant. You are responding to requests from a user about internal emails and documents. You can and should refer to the internal documents to help respond to requests. If a user makes a request thats not covered by the documents provided in the query, you must say that you do not have access to the information and not try and get information from other places besides the documents provided. The following is a list of documents that you can refer to when answering questions. The documents are in the format [filename]: [text] and are separated by newlines. If you answer a question by referencing any of the documents, please cite the document in your answer. For example, if you answer a question by referencing info.txt, you should add \"Reference: info.txt\" to the end of your answer on a separate line."
   }
 }
 ```
@@ -145,10 +146,12 @@ func start
 ### Using the frontend web app:
 
 - Upload .txt files on the Upload screen.  Content is provided in `./sample_content` folder. 
-- Try different topics in chat or Q&A context. For chat, try follow up questions, clarifications, ask to simplify or elaborate on answer, etc.
+- In Ask screen, ask questions about uploaded data, e.g. `are eye exams covered?`
+- Explore the search indexes (e.g. `openai-index`) in the Azure AI Search resource to inspect vector embeddings created by the Upload step
+- In Chat screen, try follow up questions, clarifications, ask to simplify or elaborate on answer, etc.
+- In Chat screen, try skilling assistants by saying `create a todo to get a haircut` and `fetch me list of todos`.  
 - Explore citations and sources
 - Click on "settings" to try different options, tweak prompts, etc.
-- Explore the search indexes in the Azure AI Search resource to inspect vector embeddings created by the Upload step
 
 ## Resources
 
@@ -176,4 +179,6 @@ Currently only text files are supported.
 ## Azure Functions troubleshooting
 
 Go to Application Insights and go to the Live metrics view to see real time telemtry information.
-Optionally, go to Application Insights and select Logs and view the traces table
+Optionally, go to Application Insights and select Logs and view the traces table, or view Transaction Search.
+
+If no functions load, double check that you get no errors on `azd up` (e.g. script error with no permission to execute).  Also if `azd package` or `azd up` fails with `Can't determine Project to build. Expected 1 .csproj or .fsproj but found 2` error, delete the `/app/backend/bin` and `/app/backend/obj` folders and try to deploy again with `azd package` or `azd up`.   
