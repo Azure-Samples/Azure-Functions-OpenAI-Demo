@@ -92,7 +92,16 @@ The following steps let you override resource names and other values so you can 
 azd env set AZURE_OPENAI_SERVICE <Name of existing OpenAI service>
 azd env set AZURE_OPENAI_RESOURCE_GROUP <Name of existing resource group with OpenAI resource>
 azd env set AZURE_OPENAI_CHATGPT_DEPLOYMENT <Name of existing ChatGPT deployment if not the default `chat`>
-azd env set AZURE_OPENAI_GPT_DEPLOYMENT <Name of existing GPT deployment if not `davinci`>
+azd env set AZURE_OPENAI_EMB_DEPLOYMENT <Name of existing Embedding deployment if not `embedding`>
+azd env set AZURE_SEARCH_ENDPOINT <Endpoint of existing Azure AI Search service, e.g. https://xx.search.windows.net>
+azd env set AZURE_SEARCH_INDEX: <Name of Azure AI Search index if not `openai-index`>
+azd env set fileShare <name of storage file share if not `/mounts/openaifiles`>
+azd env set ServiceBusConnection__fullyQualifiedNamespace <Namespace of existing service bus namespace>
+azd env set ServiceBusQueueName <Name of service bus Queue>
+azd env set OpenAiStorageConnection <Connection string of storage account used by OpenAI extension (managed identity coming soon!)>
+azd env set AzureWebJobsStorage__accountName <Account name of storage account used by Function runtime>
+azd env set DEPLOYMENT_STORAGE_CONNECTION_STRING <Account name of storage account used by Function deployment>
+azd env set APPLICATIONINSIGHTS_CONNECTION_STRING <Connection for App Insights resource>
 ```
 2. Deploy all resources (provision any not specified)
 ```bash
