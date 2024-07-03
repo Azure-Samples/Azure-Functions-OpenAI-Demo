@@ -77,9 +77,9 @@ namespace sample.demo
             [EmbeddingsStoreOutput(
                 "{FileName}",
                 InputType.FilePath,
-                "AISearchEndpoint",
+                "AZURE_SEARCH_ENDPOINT",
                 "openai-index",
-                Model = "%EMBEDDING_MODEL_DEPLOYMENT_NAME%"
+                Model = "%AZURE_OPENAI_EMB_DEPLOYMENT%"
             )]
             public required SearchableDocument SearchableDocument { get; init; }
         }

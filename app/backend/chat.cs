@@ -52,7 +52,7 @@ namespace sample.demo
             [AssistantPostInput(
                 "{assistantId}",
                 "{prompt}",
-                Model = "%CHAT_MODEL_DEPLOYMENT_NAME%"
+                Model = "%AZURE_OPENAI_CHATGPT_DEPLOYMENT%"
             )]
                 AssistantState state
         )

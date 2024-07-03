@@ -28,7 +28,7 @@ This solution uses the [Azure Functions OpenAI triggers and binding extension](h
 - Create a chat session and interact with the OpenAI deployed model -  Uses the Assistant bindings to interact wiht the OpenAI model and stores chat history in Azure storage tables automatically
 - In the chat session, ask the LLM to store reminders and then later retrieve them. This capability is delivered by the AssistantSkills trigger in the OpenAI extension for Azure Functions
 - Create Azure functions in different programming language e.g. (C#, Node, Python, Java, PowerShell) and easily replace using config file
-- Static web page is configured with AAD auth by default
+- Static web page is configured with Entra ID auth by default
 
 <img src="docs/uploadscreen.png" width="600">
 
@@ -46,59 +46,119 @@ This solution uses the [Azure Functions OpenAI triggers and binding extension](h
 
 #### To Run Locally
 
-- [Azure Developer CLI](https://aka.ms/azure-dev/install)
-- [.NET 8](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) - Backend Functions app is built using .NET 8
-- [Node.js](https://nodejs.org/en/download/) - Frontend is built in TypeScript
+- [.NET 8](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) - `backend` Functions app is built using .NET 8
+- [Node.js](https://nodejs.org/en/download/) - `frontend` is built in TypeScript
+- [Azure Functions Core Tools](https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local?tabs=v4%2Clinux%2Ccsharp%2Cportal%2Cbash#install-the-azure-functions-core-tools) - Run and debug `backend` Functions locally
+- [Static Web Apps Cli](https://github.com/Azure/static-web-apps-cli#azure-static-web-apps-cli) - Run and debug `frontend` SWA locally
 - [Git](https://git-scm.com/downloads)
+- [Azure Developer CLI](https://aka.ms/azure-dev/install) - Provision and deploy Azure Resources
 - [Powershell 7+ (pwsh)](https://github.com/powershell/powershell) - For Windows users only.
   - **Important**: Ensure you can run `pwsh.exe` from a PowerShell command. If this fails, you likely need to upgrade PowerShell.
-- [Static Web Apps Cli](https://github.com/Azure/static-web-apps-cli#azure-static-web-apps-cli)
-- [Azure Cli](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
-- [Azure Functions Core Tools](https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local?tabs=v4%2Clinux%2Ccsharp%2Cportal%2Cbash#install-the-azure-functions-core-tools)
+
 
 > NOTE: Your Azure Account must have `Microsoft.Authorization/roleAssignments/write` permissions, such as [User Access Administrator](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#user-access-administrator) or [Owner](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles#owner).
 
-### Installation
+### Initializing and deploying app
 
-#### Project Initialization
-
-1. Create a new folder and switch to it in the terminal
-1. Run `azd login`
-2. Run `az account set --subscription "<your target subscription>"`
-3. Run `azd init`
-   - For the target location, the regions that currently support the models used in this sample are **East US** or **South Central US**. For an up-to-date list of regions and models, check [here](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/concepts/models).  Make sure that all the intended services for this deployment have availability in your targeted regions.
+This application requires resources like Azure OpenAI and Azure AI Search which must be provisioned in Azure even if the app is run locally.  The following steps make it easy to provision, deploy and configure all resources. 
 
 #### Starting from scratch
 
-Execute the following command, if you don't have any pre-existing Azure services and want to start from a fresh deployment.
+Execute the following command in a new terminal, if you don't have any pre-existing Azure services and want to start from a fresh deployment.
 
-1. Run `azd up` - This will provision Azure resources and deploy this sample to those resources
-2. After the application has been successfully deployed you will see a URL printed to the console. Click that URL to interact with the application in your browser.
+1. Ensure your deployment scripts are executable (scripts are currently needed to help AZD deploy your app)
 
-> NOTE: It may take a minute for the application to be fully deployed.
+Mac/Linux:
+```bash
+chmod +x ./scripts/deploy.sh
+```
+Windows:
+```Powershell
+set-executionpolicy remotesigned
+```
+2. Provision required Azure resources (e.g. Azure OpenAI and Azure Search) into a new environment
+```bash
+azd up
+```
+> NOTE: For the target location, the regions that currently support the models used in this sample are **East US** or **South Central US**. For an up-to-date list of regions and models, check [here](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/concepts/models).  Make sure that all the intended services for this deployment have availability in your targeted regions.  Note also, it may take a minute for the application to be fully deployed.
+3. Navigate to the Azure Static WebApp deployed in step 2. The URL is printed out when azd completes (as "Endpoint"), or you can find it in the Azure portal.
 
 #### Use existing resources
 
-1. Run `azd env set AZURE_OPENAI_SERVICE {Name of existing OpenAI service}`
-2. Run `azd env set AZURE_OPENAI_RESOURCE_GROUP {Name of existing resource group that OpenAI service is provisioned to}`
-3. Run `azd env set AZURE_OPENAI_CHATGPT_DEPLOYMENT {Name of existing ChatGPT deployment}`. Only needed if your ChatGPT deployment is not the default 'chat'.
-4. Run `azd env set AZURE_OPENAI_GPT_DEPLOYMENT {Name of existing GPT deployment}`. Only needed if your ChatGPT deployment is not the default 'davinci'.
-5. Run `azd up`
+The following steps let you override resource names and other values so you can leverage existing resources (e.g. provided by an admin or in a sandbox environment).
+
+1. Map configuration using Azure resources provided to you:
+```bash
+azd env set AZURE_OPENAI_SERVICE <Name of existing OpenAI service>
+azd env set AZURE_OPENAI_RESOURCE_GROUP <Name of existing resource group with OpenAI resource>
+azd env set AZURE_OPENAI_CHATGPT_DEPLOYMENT <Name of existing ChatGPT deployment if not the default `chat`>
+azd env set AZURE_OPENAI_EMB_DEPLOYMENT <Name of existing Embedding deployment if not `embedding`>
+azd env set AZURE_SEARCH_ENDPOINT <Endpoint of existing Azure AI Search service, e.g. https://xx.search.windows.net>
+azd env set AZURE_SEARCH_INDEX: <Name of Azure AI Search index if not `openai-index`>
+azd env set fileShare <name of storage file share if not `/mounts/openaifiles`>
+azd env set ServiceBusConnection__fullyQualifiedNamespace <Namespace of existing service bus namespace>
+azd env set ServiceBusQueueName <Name of service bus Queue>
+azd env set OpenAiStorageConnection <Connection string of storage account used by OpenAI extension (managed identity coming soon!)>
+azd env set AzureWebJobsStorage__accountName <Account name of storage account used by Function runtime>
+azd env set DEPLOYMENT_STORAGE_CONNECTION_STRING <Account name of storage account used by Function deployment>
+azd env set APPLICATIONINSIGHTS_CONNECTION_STRING <Connection for App Insights resource>
+```
+2. Deploy all resources (provision any not specified)
+```bash
+azd up
+```
 
 > NOTE: You can also use existing Search and Storage Accounts. See `./infra/main.parameters.json` for list of environment variables to pass to `azd env set` to configure those existing resources.
 
 #### Deploying or re-deploying a local clone of the repo
 
-- Simply run `azd up`
+- Simply run `azd up` again
 
-### Quickstart
+### Running locally (currently untested/unsupported)
 
-- In Azure: navigate to the Azure WebApp deployed by azd. The URL is printed out when azd completes (as "Endpoint"), or you can find it in the Azure portal.
-- Running locally: navigate to 127.0.0.1:5000
+Your frontend and backend apps can run on the local machine using storage emulators + remote AI resources. 
 
-Once in the web app:
+1. Initialize the Azure resources using one of the approaches above.
+2. Create a new `app/backend/local.settings.json` file to store Azure resource configuration using values in the .azure/[environment name]
+```json
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AZURE_OPENAI_ENDPOINT": "<Endpoint of existing OpenAI service, e.g. https://xx.openai.azure.com/>",
+    "AZURE_OPENAI_CHATGPT_DEPLOYMENT": "chat",
+    "AZURE_OPENAI_EMB_DEPLOYMENT": "embedding",
+    "AZURE_SEARCH_ENDPOINT": "<Endpoint of existing Azure AI Search service, e.g. https://xx.search.windows.net>",
+    "AZURE_SEARCH_INDEX": "openai-index",
+    "fileShare": "/mounts/openaifiles",
+    "ServiceBusConnection__fullyQualifiedNamespace": "<Namespace of existing service bus namespace>",
+    "ServiceBusQueueName": "<Name of service bus Queue>",
+    "OpenAiStorageConnection": "<Connection string of storage account used by OpenAI extension (managed identity coming soon!)>",
+    "AzureWebJobsStorage__accountName": "<Account name of storage account used by Function runtime>",
+    "DEPLOYMENT_STORAGE_CONNECTION_STRING": "<Account name of storage account used by Function deployment>",
+    "APPLICATIONINSIGHTS_CONNECTION_STRING": "<Connection for App Insights resource>",
+    "SYSTEM_PROMPT": "You are a helpful assistant. You are responding to requests from a user about internal emails and documents. You can and should refer to the internal documents to help respond to requests. If a user makes a request thats not covered by the documents provided in the query, you must say that you do not have access to the information and not try and get information from other places besides the documents provided. The following is a list of documents that you can refer to when answering questions. The documents are in the format [filename]: [text] and are separated by newlines. If you answer a question by referencing any of the documents, please cite the document in your answer. For example, if you answer a question by referencing info.txt, you should add \"Reference: info.txt\" to the end of your answer on a separate line."
+  }
+}
+```
+3. Disable VNET private endpoints in resource group so your function can connect to remote resources (or VPN into VNET)
+4. Start Azurite using VS Code extension or run this command in a new terminal window using optional [Docker](www.docker.com)
+```bash
+docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 \
+    mcr.microsoft.com/azure-storage/azurite
+```
+5. Start the Function app by pressing `F5` in Visual Studio (Code) or run this command:
+```bash
+func start
+```
+6. navigate to http://127.0.0.1:5000
 
-- Try different topics in chat or Q&A context. For chat, try follow up questions, clarifications, ask to simplify or elaborate on answer, etc.
+### Using the frontend web app:
+
+- Upload .txt files on the Upload screen.  Content is provided in `./sample_content` folder. 
+- In Ask screen, ask questions about uploaded data, e.g. `are eye exams covered?`
+- Explore the search indexes (e.g. `openai-index`) in the Azure AI Search resource to inspect vector embeddings created by the Upload step
+- In Chat screen, try follow up questions, clarifications, ask to simplify or elaborate on answer, etc.
+- In Chat screen, try skilling assistants by saying `create a todo to get a haircut` and `fetch me list of todos`.  
 - Explore citations and sources
 - Click on "settings" to try different options, tweak prompts, etc.
 
@@ -108,10 +168,18 @@ Once in the web app:
 - [Revolutionize your Enterprise Data with ChatGPT: Next-gen Apps w/ Azure OpenAI and AI Search](https://aka.ms/entgptsearchblog)
 - [Azure AI Search](https://learn.microsoft.com/azure/search/search-what-is-azure-search)
 - [Azure OpenAI Service](https://learn.microsoft.com/azure/cognitive-services/openai/overview)
+- [Azure Role-based-access-control](https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles)
 
-## How to purge aad auth
+## How to purge Entra ID auth
 
 To remove your data from Azure Static Web Apps, go to <https://identity.azurestaticapps.net/.auth/purge/aad>
+
+## How to delete all Azure resources
+
+The following command deletes and purges all resources (this cannot be undone!):
+```bash
+azd down --purge
+```
 
 ## Upload files failures
 
@@ -120,4 +188,6 @@ Currently only text files are supported.
 ## Azure Functions troubleshooting
 
 Go to Application Insights and go to the Live metrics view to see real time telemtry information.
-Optionally, go to Application Insights and select Logs and view the traces table
+Optionally, go to Application Insights and select Logs and view the traces table, or view Transaction Search.
+
+If no functions load, double check that you get no errors on `azd up` (e.g. script error with no permission to execute).  Also if `azd package` or `azd up` fails with `Can't determine Project to build. Expected 1 .csproj or .fsproj but found 2` error, delete the `/app/backend/bin` and `/app/backend/obj` folders and try to deploy again with `azd package` or `azd up`.   

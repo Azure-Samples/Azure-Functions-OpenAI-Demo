@@ -19,9 +19,9 @@ param azFunctionHostingPlanType string = 'flexconsumption'
 param staticWebsiteName string = ''
  
 param searchServiceName string = ''
- 
-param searchServiceSkuName string = 'standard'
-param searchIndexName string = 'gptkbindex'
+@allowed([ 'free', 'basic', 'standard', 'standard2', 'standard3', 'storage_optimized_l1', 'storage_optimized_l2' ])
+param searchServiceSkuName string
+param searchServiceIndexName string
  
 param storageAccountName string = ''
 
@@ -30,11 +30,33 @@ param serviceBusNamespaceName string = ''
 
 param openAiServiceName string = ''
  
-param openAiSkuName string = 'S0'
-param gptDeploymentName string = 'text-embedding-3-small'
-param gptModelName string = 'text-embedding-3-small'
-param chatGptDeploymentName string = 'chat'
-param chatGptModelName string = 'gpt-35-turbo'
+param openAiSkuName string
+@allowed([ 'azure', 'openai', 'azure_custom' ])
+param openAiHost string // Set in main.parameters.json
+
+param chatGptModelName string = ''
+param chatGptDeploymentName string = ''
+param chatGptDeploymentVersion string = ''
+param chatGptDeploymentCapacity int = 0
+var chatGpt = {
+  modelName: !empty(chatGptModelName) ? chatGptModelName : startsWith(openAiHost, 'azure') ? 'gpt-35-turbo' : 'gpt-3.5-turbo'
+  deploymentName: !empty(chatGptDeploymentName) ? chatGptDeploymentName : 'chat'
+  deploymentVersion: !empty(chatGptDeploymentVersion) ? chatGptDeploymentVersion : '0613'
+  deploymentCapacity: chatGptDeploymentCapacity != 0 ? chatGptDeploymentCapacity : 40
+}
+
+param embeddingModelName string = ''
+param embeddingDeploymentName string = ''
+param embeddingDeploymentVersion string = ''
+param embeddingDeploymentCapacity int = 0
+param embeddingDimensions int = 0
+var embedding = {
+  modelName: !empty(embeddingModelName) ? embeddingModelName : 'text-embedding-3-small'
+  deploymentName: !empty(embeddingDeploymentName) ? embeddingDeploymentName : 'embedding'
+  deploymentVersion: !empty(embeddingDeploymentVersion) ? embeddingDeploymentVersion : '1'
+  deploymentCapacity: embeddingDeploymentCapacity != 0 ? embeddingDeploymentCapacity : 300
+  dimensions: embeddingDimensions != 0 ? embeddingDimensions : 1536
+}
  
 // @description('Id of the user or app to assign application roles')
 // param principalId string = ''
@@ -81,24 +103,24 @@ module openAi 'core/ai/cognitiveservices.bicep' = {
     }
     deployments: [
       {
-        name: gptDeploymentName
-        capacity: 300
+        name: embedding.deploymentName
+        capacity: embedding.deploymentCapacity
         model: {
           format: 'OpenAI'
-          name: gptModelName
-          version: '1'
+          name: embedding.modelName
+          version: embedding.deploymentVersion
         }
         scaleSettings: {
           scaleType: 'Standard'
         }
       }
       {
-        name: chatGptDeploymentName
-        capacity: 40
+        name: chatGpt.deploymentName
+        capacity: chatGpt.deploymentCapacity
         model: {
           format: 'OpenAI'
-          name: chatGptModelName
-          version: '0613'
+          name: chatGpt.modelName
+          version: chatGpt.deploymentVersion
         }
         scaleSettings: {
           scaleType: 'Standard'
@@ -172,7 +194,7 @@ module function 'core/host/azfunctions.bicep' = if (azFunctionHostingPlanType ==
     location: location
     appServicePlanId: appServicePlan.outputs.id
     azureOpenaiChatgptDeployment: chatGptDeploymentName
-    azureOpenaigptDeployment: gptDeploymentName
+    azureOpenaigptDeployment: embeddingDeploymentName
     azureOpenaiService: openAi.outputs.name
     azureSearchService: searchService.outputs.name
     appInsightsConnectionString : appInsights.outputs.connectionString
@@ -195,9 +217,10 @@ module functionflexconsumption 'app/processor.bicep' = if (azFunctionHostingPlan
     storageAccountName: storage.outputs.name
     appInsightsConnectionString : appInsights.outputs.connectionString
     azureOpenaiChatgptDeployment: chatGptDeploymentName
-    azureOpenaigptDeployment: gptDeploymentName
+    azureOpenaiEmbeddingDeployment: embeddingDeploymentName
     azureOpenaiService: openAi.outputs.name
     azureSearchService: searchService.outputs.name
+    azureSearchIndex: searchServiceIndexName
     serviceBusQueueName: serviceBus.outputs.serviceBusQueueName
     serviceBusNamespaceFQDN: serviceBus.outputs.serviceBusNamespaceFQDN
      appSettings: {
@@ -230,39 +253,34 @@ module staticwebsite 'core/host/staticwebsite.bicep' = {
   }
 }
 
+// Learn more about Azure role-based access control (RBAC) and built-in-roles at https://docs.microsoft.com/en-us/azure/role-based-access-control/overview
+var CognitiveServicesRoleDefinitionIds = ['5e0bd9bd-7b93-4f28-af87-19fc36ad61bd'] // Cognitive Services OpenAI User
 module openAiRoleUser 'app/openai-access.bicep' = {
   scope: resourceGroup
   name: 'openai-roles'
   params: {
     principalId: processorAppPrincipalId
     openAiAccountResourceName: openAi.outputs.name
-    roleDefinitionIds: ['5e0bd9bd-7b93-4f28-af87-19fc36ad61bd']
+    roleDefinitionIds: CognitiveServicesRoleDefinitionIds
   }
 }
  
+var StorageRoleDefinitionIds = ['b7e6dc6d-f1e8-4753-8033-0f276bb0955b' // Storage Blob Data Owner
+                                '974c5e8b-45b9-4653-ba55-5f855dd0fb88' // Storage Queue Data Contributor
+                                '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3' // Storage Table Data Contributor
+                                '0c867c2a-1d8c-454a-a3db-ab2ea1bdc8bb'] // Storage File Data SMB Share Contributor
 module storageRoleUser 'app/storage-access.bicep' = {
   scope: resourceGroup
   name: 'storage-roles'
   params: {
     principalId: processorAppPrincipalId
-    //This list can likely be reduced to just the roles needed
-    roleDefinitionIds: ['b7e6dc6d-f1e8-4753-8033-0f276bb0955b'
-                        '2a2b9908-6ea1-4ae2-8e65-a410df84e7d1'
-                        'ba92f5b4-2d11-453d-a403-e96b0029c9fe'
-                        '974c5e8b-45b9-4653-ba55-5f855dd0fb88'
-                        '8a0f0c08-91a1-4084-bc3d-661d67233fed'
-                        'c6a89b2d-59bc-44d0-9896-0f6e12d7b80a'
-                        '19e7f393-937e-4f77-808e-94535e297925'
-                        '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3'
-                        '76199698-9eea-4c19-bc75-cec21354c6b6'
-                        '0c867c2a-1d8c-454a-a3db-ab2ea1bdc8bb'
-                        'aba4ae5f-2193-4029-9191-0cb91df5e314']
+    roleDefinitionIds: StorageRoleDefinitionIds
     storageAccountName: storage.outputs.name
   }
 }
 
-var ServiceBusRoleDefinitionIds  = ['090c5cfd-751d-490a-894a-3ce6f1109419', '4f6d3b9b-027b-4f4c-9142-0e5a2a2247e0'] //Azure Service Bus Data Owner and Data Receiver roles
-// Allow access from processor to Service Bus using a managed identity and Azure Service Bus Data Owner and Data Receiver roles
+var ServiceBusRoleDefinitionIds  = ['090c5cfd-751d-490a-894a-3ce6f1109419'] // Azure Service Bus Data Owner
+// Allow access from processor to Service Bus using a managed identity and Azure Service Bus Data Owner
 module ServiceBusDataOwnerRoleAssignment 'app/servicebus-Access.bicep' = {
   name: 'ServiceBusDataOwnerRoleAssignment'
   scope: resourceGroup
@@ -273,12 +291,15 @@ module ServiceBusDataOwnerRoleAssignment 'app/servicebus-Access.bicep' = {
   }
 }
 
+var SearchRoleDefinitionIds = ['8ebe5a00-799e-43f5-93ac-243d3dce84a7'  // Azure Search Index Data Contributor
+                               '7ca78c08-252a-4471-8644-bb5ff32d4ba0'  // Azure Search Service Contributor (required if index is not yet created)
+                              ]
 module searchRoleUser 'app/search-access.bicep' = {
   scope: resourceGroup
   name: 'search-roles'
   params: {
     principalId: processorAppPrincipalId
-    roleDefinitionIds: ['7ca78c08-252a-4471-8644-bb5ff32d4ba0', '8ebe5a00-799e-43f5-93ac-243d3dce84a7', '1407120a-92aa-4202-b7e9-c0e197c71c8f']
+    roleDefinitionIds: SearchRoleDefinitionIds
     searchAccountName: searchService.outputs.name
   }
 }
@@ -310,11 +331,11 @@ output AZURE_TENANT_ID string = tenant().tenantId
 output AZURE_RESOURCE_GROUP string = resourceGroup.name
  
 output AZURE_OPENAI_SERVICE string = openAi.outputs.name
-output AZURE_OPENAI_GPT_DEPLOYMENT string = gptDeploymentName
+output AZURE_OPENAI_EMB_DEPLOYMENT string = embeddingDeploymentName
 output AZURE_OPENAI_CHATGPT_DEPLOYMENT string = chatGptDeploymentName
 output AZURE_OPENAI_LOCATION string = openAi.outputs.location
  
-output AZURE_SEARCH_INDEX string = searchIndexName
+output AZURE_SEARCH_INDEX string = searchServiceIndexName
 output AZURE_SEARCH_SERVICE string = searchService.outputs.name
  
 output AZURE_STORAGE_ACCOUNT string = storage.outputs.name
