@@ -17,7 +17,7 @@
           "searchProvider": {
             "type": "azureAiSearch",
             "isSemanticSearchEnabled": true,
-            "useSemanticCaptions": true,
+            "useSemanticCaptions": false,
             "vectorSearchDimensions": 1536
           },
           "storageConnectionName": "OpenAiStorageConnection"
