@@ -38,6 +38,9 @@ param chatGptModelName string = ''
 param chatGptDeploymentName string = ''
 param chatGptDeploymentVersion string = ''
 param chatGptDeploymentCapacity int = 0
+
+param disableLocalAuth bool = true
+
 var chatGpt = {
   modelName: !empty(chatGptModelName) ? chatGptModelName : startsWith(openAiHost, 'azure') ? 'gpt-35-turbo' : 'gpt-3.5-turbo'
   deploymentName: !empty(chatGptDeploymentName) ? chatGptDeploymentName : 'chat'
@@ -238,6 +241,20 @@ module appInsights 'core/monitor/app-insights.bicep' = {
     name: '${abbrs.webSitesFunctions}${resourceToken}'
     location: location
     tags: tags
+    disableLocalAuth: disableLocalAuth
+  }
+}
+
+var monitoringRoleDefinitionId = '3913510d-42f4-4e42-8a64-420c390055eb' // Monitoring Metrics Publisher role ID
+
+// Allow access from processor to application insights using a managed identity
+module appInsightsRoleAssignmentApi './core/monitor/appinsights-access.bicep' = {
+  name: 'appInsightsRoleAssignmentPRocessor'
+  scope: resourceGroup
+  params: {
+    appInsightsName: appInsights.outputs.appInsightsName
+    roleDefinitionID: monitoringRoleDefinitionId
+    principalID: processorAppPrincipalId
   }
 }
 

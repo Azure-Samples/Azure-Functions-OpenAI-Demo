@@ -20,6 +20,8 @@ param serviceBusQueueName string
 param serviceBusNamespaceFQDN string
 param shareName string
 
+var applicationInsightsIdentity = 'Authorization=AAD'
+
 resource stg 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
   name: storageAccountName
 }
@@ -45,6 +47,7 @@ module processor '../core/host/functions-flexconsumption.bicep' = {
         OpenAiStorageConnection: 'DefaultEndpointsProtocol=https;AccountName=${stg.name};EndpointSuffix=${environment().suffixes.storage};AccountKey=${stg.listKeys().keys[0].value}'
         ServiceBusConnection__fullyQualifiedNamespace: serviceBusNamespaceFQDN
         ServiceBusQueueName: serviceBusQueueName
+        APPLICATIONINSIGHTS_AUTHENTICATION_STRING: applicationInsightsIdentity
       })
     storageConfigProperties: {
       '${shareName}': {
