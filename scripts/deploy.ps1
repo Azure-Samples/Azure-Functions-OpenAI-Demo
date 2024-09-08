@@ -40,6 +40,12 @@ cd ../backend
 # } else {
 #   Write-Host "AZURE_SEARCH_KEY is empty, not setting it. Go to Azure portal and set it manually."
 # }
+
+# delete the bin and obj folders to get around an issue - temporary, fix is coming
+rm bin -force -recurse
+rm obj -force -recurse
+
+# publish the Function app to Azure
 func azure functionapp publish $env:AZURE_FUNCTION_NAME --dotnet-isolated
 
 Write-Host "Deployment completed."

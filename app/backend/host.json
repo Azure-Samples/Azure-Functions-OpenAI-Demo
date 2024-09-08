@@ -9,7 +9,7 @@
             "enableLiveMetricsFilters": true
         },
         "logLevel": {
-          "default": "Trace"
+          "default": "Information"
         }
     },
     "extensions": {
