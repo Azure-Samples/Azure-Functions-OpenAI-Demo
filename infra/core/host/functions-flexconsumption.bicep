@@ -28,7 +28,7 @@ resource stg 'Microsoft.Storage/storageAccounts@2022-09-01' existing = {
   name: storageAccountName
 }
 resource functions 'Microsoft.Web/sites@2023-12-01' = {
-  name: '${name}-functions'
+  name: name
   location: location
   tags: tags
   kind: kind
