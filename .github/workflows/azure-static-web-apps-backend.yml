@@ -19,7 +19,7 @@ env:
 
 jobs:
   build_and_deploy_job:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed' & github.secret_source == 'Actions' )
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     steps:
@@ -42,7 +42,6 @@ jobs:
       uses: Azure/functions-action@v1
       id: fa
       with:
-        if: ${{ github.secret_source == 'Actions' }}
         app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
         package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
         publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
