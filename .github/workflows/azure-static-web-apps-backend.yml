@@ -38,10 +38,11 @@ jobs:
         dotnet build --configuration Release --output ./output
         popd
 
-    - name: 'Run Azure Functions Action'
-      uses: Azure/functions-action@v1
-      id: fa
-      with:
-        app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-        package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
-        publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
+   # Uncomment if publishing app after setting up Azure credentials.
+   # - name: 'Run Azure Functions Action'
+   #   uses: Azure/functions-action@v1
+   #   id: fa
+   #   with:
+   #     app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
+   #     package: '${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/output'
+   #     publish-profile: ${{ secrets.AZURE_FUNCTIONAPP_PUBLISH_PROFILE }}
