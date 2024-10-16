@@ -19,8 +19,7 @@
             "isSemanticSearchEnabled": true,
             "useSemanticCaptions": false,
             "vectorSearchDimensions": 1536
-          },
-          "storageConnectionName": "OpenAiStorageConnection"
+          }
         },
         "serviceBus": {
           "maxConcurrentCalls": 1

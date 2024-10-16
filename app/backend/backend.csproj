@@ -15,7 +15,7 @@
     <PackageReference Include="HttpMultipartParser" Version="8.4.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Storage.Queues" Version="5.4.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker" Version="1.22.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.OpenAI" Version="0.15.0-alpha" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.OpenAI" Version="0.18.0-alpha" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.OpenAI.AzureAISearch" Version="0.3.0-alpha" />
     <PackageReference Include="Microsoft.ApplicationInsights.WorkerService" Version="2.21.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.ApplicationInsights" Version="1.1.0" />

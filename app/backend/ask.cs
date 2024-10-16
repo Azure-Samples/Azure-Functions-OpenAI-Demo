@@ -32,12 +32,12 @@ namespace sample.demo
         {
             _logger.LogInformation("Ask function called...");
 
-            var _answer = new answer(new string[] { }, result.Response, "");
+            var _answer = new AnswerResponse(new string[] { }, result.Response, "");
 
             return new OkObjectResult(_answer);
         }
 
-        public record answer(
+        public record AnswerResponse(
             [property: JsonPropertyName("data_points")] string[] DataPoints,
             [property: JsonPropertyName("answer")] string Answer,
             [property: JsonPropertyName("thoughts")] string Thoughts

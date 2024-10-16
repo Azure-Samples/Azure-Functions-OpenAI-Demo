@@ -9,6 +9,10 @@ namespace sample.demo
 {
     public class Chat
     {
+        // Location to store chat history
+        const string DefaultChatStorageConnectionSetting = "OpenAiStorageConnection";
+        const string DefaultCollectionName = "ChatState";
+        
         private readonly ILogger<Chat> _logger;
 
         public Chat(ILogger<Chat> logger)
@@ -33,7 +37,11 @@ namespace sample.demo
             return new CreateChatBotOutput
             {
                 HttpResponse = new OkObjectResult(responseJson),
-                ChatBotCreateRequest = new AssistantCreateRequest(assistantId, instructions),
+                ChatBotCreateRequest = new AssistantCreateRequest(assistantId, instructions)
+                {
+                    ChatStorageConnectionSetting = DefaultChatStorageConnectionSetting,
+                    CollectionName = DefaultCollectionName
+                },
             };
         }
 
@@ -52,13 +60,15 @@ namespace sample.demo
             [AssistantPostInput(
                 "{assistantId}",
                 "{prompt}",
-                Model = "%AZURE_OPENAI_CHATGPT_DEPLOYMENT%"
+                Model = "%AZURE_OPENAI_CHATGPT_DEPLOYMENT%",
+                ChatStorageConnectionSetting = DefaultChatStorageConnectionSetting,
+                CollectionName = DefaultCollectionName
             )]
                 AssistantState state
         )
         {
             // Send response to client in expected format, including assistantId
-            var _answer = new answer(
+            var _answer = new AnswerResponse(
                 new string[] { },
                 state.RecentMessages.LastOrDefault()?.Content ?? "No response returned.",
                 ""
@@ -72,12 +82,12 @@ namespace sample.demo
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "chat/{assistantId}")]
                 HttpRequestData req,
             string assistantId,
-            [AssistantQueryInput("{assistantId}", TimestampUtc = "{Query.timestampUTC}")]
+            [AssistantQueryInput("{assistantId}", TimestampUtc = "{Query.timestampUTC}", ChatStorageConnectionSetting = DefaultChatStorageConnectionSetting, CollectionName = DefaultCollectionName)]
                 AssistantState state
         )
         {
             // Returns the last message from the history table which will be the latest answer to the last question
-            var _answer = new answer(
+            var _answer = new AnswerResponse(
                 new string[] { },
                 state.RecentMessages.LastOrDefault()?.Content ?? "No response returned.",
                 ""
@@ -95,7 +105,7 @@ namespace sample.demo
             public IActionResult? HttpResponse { get; set; }
         }
 
-        public record answer(
+        public record AnswerResponse(
             [property: JsonPropertyName("data_points")] string[] DataPoints,
             [property: JsonPropertyName("answer")] string Answer,
             [property: JsonPropertyName("thoughts")] string thoughts
