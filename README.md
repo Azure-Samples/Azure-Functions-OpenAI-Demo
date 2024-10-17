@@ -127,35 +127,39 @@ Your frontend and backend apps can run on the local machine using storage emulat
 2. Create a new `app/backend/local.settings.json` file to store Azure resource configuration using values in the .azure/[environment name]
 ```json
 {
-  "IsEncrypted": false,
-  "Values": {
-    "AZURE_OPENAI_ENDPOINT": "<Endpoint of existing OpenAI service, e.g. https://xx.openai.azure.com/>",
-    "AZURE_OPENAI_CHATGPT_DEPLOYMENT": "chat",
-    "AZURE_OPENAI_EMB_DEPLOYMENT": "embedding",
-    "AZURE_SEARCH_ENDPOINT": "<Endpoint of existing Azure AI Search service, e.g. https://xx.search.windows.net>",
-    "AZURE_SEARCH_INDEX": "openai-index",
-    "fileShare": "/mounts/openaifiles",
-    "ServiceBusConnection__fullyQualifiedNamespace": "<Namespace of existing service bus namespace>",
-    "ServiceBusQueueName": "<Name of service bus Queue>",
-    "OpenAiStorageConnection": "<Connection string of storage account used by OpenAI extension (managed identity coming soon!)>",
-    "AzureWebJobsStorage__accountName": "<Account name of storage account used by Function runtime>",
-    "DEPLOYMENT_STORAGE_CONNECTION_STRING": "<Account name of storage account used by Function deployment>",
-    "APPLICATIONINSIGHTS_CONNECTION_STRING": "<Connection for App Insights resource>",
-    "SYSTEM_PROMPT": "You are a helpful assistant. You are responding to requests from a user about internal emails and documents. You can and should refer to the internal documents to help respond to requests. If a user makes a request thats not covered by the documents provided in the query, you must say that you do not have access to the information and not try and get information from other places besides the documents provided. The following is a list of documents that you can refer to when answering questions. The documents are in the format [filename]: [text] and are separated by newlines. If you answer a question by referencing any of the documents, please cite the document in your answer. For example, if you answer a question by referencing info.txt, you should add \"Reference: info.txt\" to the end of your answer on a separate line."
+    "IsEncrypted": false,
+    "Values": {
+      "FUNCTIONS_WORKER_RUNTIME": "dotnet-isolated",
+      "AZURE_OPENAI_ENDPOINT": "<Endpoint of existing OpenAI service, e.g. https://xx.openai.azure.com/>",
+      "AZURE_OPENAI_CHATGPT_DEPLOYMENT": "chat",
+      "AZURE_OPENAI_EMB_DEPLOYMENT": "embedding",
+      "AZURE_SEARCH_ENDPOINT": "<Endpoint of existing Azure AI Search service, e.g. https://xx.search.windows.net>",
+      "AZURE_SEARCH_INDEX": "openai-index",
+      "fileShare": "<Local directory on file system, e.g c:\\temp or /tmp>",
+      "ServiceBusConnection": "<Namespace of existing service bus namespace>",
+      "ServiceBusQueueName": "<Name of service bus Queue>",
+      "OpenAiStorageConnection": "UseDevelopmentStorage=true",
+      "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+      "SYSTEM_PROMPT": "You are a helpful assistant. You are responding to requests from a user about internal emails and documents. You can and should refer to the internal documents to help respond to requests. If a user makes a request thats not covered by the documents provided in the query, you must say that you do not have access to the information and not try and get information from other places besides the documents provided. The following is a list of documents that you can refer to when answering questions. The documents are in the format [filename]: [text] and are separated by newlines. If you answer a question by referencing any of the documents, please cite the document in your answer. For example, if you answer a question by referencing info.txt, you should add \"Reference: info.txt\" to the end of your answer on a separate line."
+    }
   }
-}
-```
-3. Disable VNET private endpoints in resource group so your function can connect to remote resources (or VPN into VNET)
-4. Start Azurite using VS Code extension or run this command in a new terminal window using optional [Docker](http://www.docker.com)
+```json
+3. Make the OpenAI resource have public access so you can reach it as it is set up for private endpoints only. Go to the networking tab on the OpenAI resource and change access to public.
+4. Add your account (eg. contoso.microsoft.com) to the Open AI resource with the following role.
+- Cognitive Services OpenAI User
+5. Add your account (eg. contoso.microsoft.com) to the AI search resource with the following roles.
+- Search Service Contributor
+- Search Index Data Contributor
+6. Start Azurite using VS Code extension or run this command in a new terminal window using optional [Docker](http://www.docker.com)
 ```bash
 docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 \
     mcr.microsoft.com/azure-storage/azurite
 ```
-5. Start the Function app by pressing `F5` in Visual Studio (Code) or run this command:
+5. Start the static web app and function app by running
 ```bash
-func start
+swa start
 ```
-6. navigate to http://127.0.0.1:5000
+6. navigate to http://localhost:4280/
 
 ### Using the frontend web app:
 
