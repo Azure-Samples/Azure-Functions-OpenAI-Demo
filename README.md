@@ -66,7 +66,12 @@ This application requires resources like Azure OpenAI and Azure AI Search which 
 
 Execute the following command in a new terminal, if you don't have any pre-existing Azure services and want to start from a fresh deployment.
 
-1. Ensure your deployment scripts are executable (scripts are currently needed to help AZD deploy your app)
+1. Run the following command to download the project code
+```bash
+azd init -t https://github.com/Azure-Samples/Azure-Functions-OpenAI-Demo
+```
+
+2. Ensure your deployment scripts are executable (scripts are currently needed to help AZD deploy your app)
 
 Mac/Linux:
 ```bash
@@ -76,7 +81,7 @@ Windows:
 ```Powershell
 set-executionpolicy remotesigned
 ```
-2. Provision required Azure resources (e.g. Azure OpenAI and Azure Search) into a new environment
+3. Provision required Azure resources (e.g. Azure OpenAI and Azure Search) into a new environment
 ```bash
 azd up
 ```
@@ -141,7 +146,7 @@ Your frontend and backend apps can run on the local machine using storage emulat
 }
 ```
 3. Disable VNET private endpoints in resource group so your function can connect to remote resources (or VPN into VNET)
-4. Start Azurite using VS Code extension or run this command in a new terminal window using optional [Docker](www.docker.com)
+4. Start Azurite using VS Code extension or run this command in a new terminal window using optional [Docker](http://www.docker.com)
 ```bash
 docker run -p 10000:10000 -p 10001:10001 -p 10002:10002 \
     mcr.microsoft.com/azure-storage/azurite
