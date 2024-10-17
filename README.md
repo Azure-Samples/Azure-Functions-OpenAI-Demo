@@ -143,7 +143,8 @@ Your frontend and backend apps can run on the local machine using storage emulat
       "SYSTEM_PROMPT": "You are a helpful assistant. You are responding to requests from a user about internal emails and documents. You can and should refer to the internal documents to help respond to requests. If a user makes a request thats not covered by the documents provided in the query, you must say that you do not have access to the information and not try and get information from other places besides the documents provided. The following is a list of documents that you can refer to when answering questions. The documents are in the format [filename]: [text] and are separated by newlines. If you answer a question by referencing any of the documents, please cite the document in your answer. For example, if you answer a question by referencing info.txt, you should add \"Reference: info.txt\" to the end of your answer on a separate line."
     }
   }
-```json
+```
+
 3. Make the OpenAI resource have public access so you can reach it as it is set up for private endpoints only. Go to the networking tab on the OpenAI resource and change access to public.
 4. Add your account (eg. contoso.microsoft.com) to the Open AI resource with the following role.
 - Cognitive Services OpenAI User
