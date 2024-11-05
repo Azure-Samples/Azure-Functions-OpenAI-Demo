@@ -1,3 +1,4 @@
+<!--
 ---
 page_type: sample
 languages:
@@ -16,6 +17,7 @@ urlFragment: Azure-Functions-OpenAI-Demo
 name: "Azure Functions OpenAI triggers and bindings sample"
 description: An end to end demo that demonstrates how to use the Azure Functions OpenAI triggers and bindings.
 ---
+-->
 
 # Chat + Enterprise data with Azure OpenAI and Azure Functions
 
